@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FRAIL Scale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:1rem; background:#f2f2f2; }
+    .container { max-width:600px; margin:auto; position:relative; padding-bottom:70px; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+    form { font-size:17px; line-height:1.6; padding:20px; }
+    label { display:block; padding:8px 0; }
+    label + label { border-top:1px solid #eee; }
+    select, input[type="number"] { margin-left:8px; font-size:16px; }
+    input[type="checkbox"] { transform:scale(1.5); margin-left:4px; }
+    #weightFields { display:none; padding:0 20px 8px; }
+    #weightFields div { margin-top:4px; }
+    #checkOld, #checkNow { color:green; display:none; margin-left:4px; }
+    #frailResult { margin:20px; padding:16px; border-radius:6px; border:1px solid #ccc; text-align:center; display:none; font-size:17px; line-height:1.5; transition:all 0.3s; }
+    .footer { position:absolute; bottom:0; width:100%; text-align:center; font-size:13px; color:#777; line-height:1.4; padding:10px 0; background:#fff; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <form id="frailForm">
+    <h3 style="text-align:center;margin-bottom:15px;font-size:24px;">FRAIL Scale</h3>
+
+    <label>
+      1. How much of the time during the past 4 weeks did you feel tired?
+      <select onchange="calculateFRAIL()">
+        <option value="">—</option>
+        <option value="1">All of the time</option>
+        <option value="1">Most of the time</option>
+        <option value="0">Some of the time</option>
+        <option value="0">A little of the time</option>
+        <option value="0">None of the time</option>
+      </select>
+    </label>
+
+    <label>
+      2. By yourself and not using aids, do you have any difficulty walking up 10 steps without resting?
+      <strong style="margin-left:8px;">Yes</strong><input type="checkbox" id="resistance" onchange="calculateFRAIL()">
+    </label>
+    <label>
+      3. By yourself and not using aids, do you have any difficulty walking a couple of blocks (e.g. several hundred yards)?
+      <strong style="margin-left:8px;">Yes</strong><input type="checkbox" id="ambulation" onchange="calculateFRAIL()">
+    </label>
+    <label>
+      4. Do you have five or more medical conditions in total?
+      <strong style="margin-left:8px;">Yes</strong><input type="checkbox" id="illnesses" onchange="calculateFRAIL()">
+    </label>
+
+    <label>
+      5. Did you lose ≥ 5% of your weight over the last year?
+      <select id="weightSelect" onchange="toggleWeightFields()">
+        <option value="">—</option>
+        <option value="1">Yes</option>
+        <option value="0">No</option>
+        <option value="help">Calculate it for me</option>
+      </select>
+    </label>
+
+    <div id="weightFields">
+      <div>
+        Weight last year (lb):
+        <input type="number" id="weightOld" placeholder="e.g.150" min="45" max="800" maxlength="3" style="width:90px;padding:4px;" oninput="autoCalcWeight()">
+        <span id="checkOld">✔️</span>
+      </div>
+      <div>
+        Current weight (lb):
+        <input type="number" id="weightNow" placeholder="e.g.145" min="45" max="800" maxlength="3" style="width:90px;padding:4px;" oninput="autoCalcWeight()">
+        <span id="checkNow">✔️</span>
+      </div>
+    </div>
+  </form>
+
+  <div id="frailResult"></div>
+
+  <div class="footer">
+    Based on FRAIL Scale (Woo et al., JAMDA 2015 & Morley et al., J Nutr Health Aging 2012). Recommendations per 2024 AHA/ACC guidelines.
+  </div>
+</div>
+
+<script>
+function toggleWeightFields(){
+  const sel = document.getElementById('weightSelect').value;
+  document.getElementById('weightFields').style.display = sel === 'help' ? 'block' : 'none';
+  document.getElementById('checkOld').style.display = 'none';
+  document.getElementById('checkNow').style.display = 'none';
+  calculateFRAIL();
+}
+function autoCalcWeight(){
+  const old = document.getElementById('weightOld').value;
+  const now = document.getElementById('weightNow').value;
+  document.getElementById('checkOld').style.display = (old >= 45 && old <= 800) ? 'inline' : 'none';
+  document.getElementById('checkNow').style.display = (now >= 45 && now <= 800) ? 'inline' : 'none';
+  if(old.length >= 2 && now.length >= 2) calculateFRAIL();
+}
+function calculateFRAIL(){
+  let score = 0;
+  score += parseInt(document.querySelector('#frailForm select').value || 0);
+  ['resistance','ambulation','illnesses'].forEach(id => {
+    if(document.getElementById(id).checked) score++;
+  });
+  const weightSel = document.getElementById('weightSelect').value;
+  if(weightSel === '1') score++;
+  else if(weightSel === 'help'){
+    const wOld = parseFloat(document.getElementById('weightOld').value) || 0;
+    const wNow = parseFloat(document.getElementById('weightNow').value) || 0;
+    if(wOld >= 45 && wNow >= 45 && wOld <= 800 && wNow <= 800 && ((wOld - wNow)/wOld * 100) > 5) score++;
+  }
+  
+  const resultDiv = document.getElementById('frailResult');
+  let bg = '#e6f4ea', br = '#8bc34a';
+  let text = `Score: ${score}/5 – Not frail`, rec = '';
+  if(score === 2){
+    bg = '#fff7e0'; br = '#ffb300';
+    text = `Score: ${score}/5 – Pre‑Frail`;
+    rec = `Patient is showing early signs of reduced physiological reserve. Recommend prehabilitation (exercise, nutrition), review and optimize chronic conditions, and consider a geriatric or functional assessment before elective surgery planning.`;
+  } else if(score >= 3){
+    bg = '#fdecea'; br = '#e53935';
+    text = `Score: ${score}/5 – Frail`;
+    rec = `Patients at high risk for perioperative complications and prolonged recovery. The guidelines advise prehabilitation (physical therapy), comprehensive geriatric evaluation, tailored anesthetic planning to minimize sedatives and opioids, and enhanced perioperative monitoring. Shared decision‑making is essential, and urgent procedures should proceed with multidisciplinary support.`;
+  }
+  
+  resultDiv.innerHTML = `<strong>${text}</strong>${rec ? '<br>' + rec : ''}<br><small>Per 2024 AHA/ACC guidelines.</small>`;
+  resultDiv.style.background = bg;
+  resultDiv.style.borderColor = br;
+  resultDiv.style.display = 'block';
+}
+</script>
+
+</body>
+</html>

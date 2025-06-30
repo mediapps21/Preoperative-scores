@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>STOP-BANG Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<div style="max-width:600px;margin:auto;font-family:Arial,sans-serif;color:#333;position:relative;padding-bottom:50px;">
+  <div style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+    <h3 style="text-align:center;margin-bottom:15px;font-size:24px;line-height:1.3;">
+      STOP-BANG Score for Obstructive Sleep Apnea
+    </h3>
+
+    <div style="font-size:17px;margin-bottom:14px;">
+      <strong>Choose all that apply to your patient:</strong>
+    </div>
+
+    <form id="stopbangForm" style="font-size:18px;">
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        Snores loudly (loud enough to be heard through closed doors or bed-partner elbows for snoring at night).
+      </label>
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        Often feels tired, fatigued, or sleepy during the day (e.g., falling asleep while driving or talking).
+      </label>
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        Someone has observed them stop breathing or choking/gasping during sleep.
+      </label>
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        High blood pressure
+      </label>
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        BMI over 35
+      </label>
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        Age over 50
+      </label>
+      <label style="display:block;padding:10px 0;border-bottom:1px solid #eee;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        Neck >40 cm
+      </label>
+      <label style="display:block;padding:10px 0;cursor:pointer;">
+        <input type="checkbox" onchange="calculateSTOPBang()" style="transform:scale(1.3);margin-right:10px;">
+        Male gender
+      </label>
+    </form>
+
+    <div id="stopbangResult" style="margin-top:20px;padding:16px;border-radius:6px;border:1px solid #ccc;background:#f9f9f9;text-align:center;display:none;font-size:17px;line-height:1.6;transition: all 0.3s;"></div>
+  </div>
+
+  <div style="position:absolute;bottom:0;width:100%;text-align:center;font-size:14px;color:#777;line-height:1.4;">
+    Based on STOP-Bang Questionnaire by Chung et al., Anesthesiology 2008.
+  </div>
+
+  <script type="text/javascript">
+    function calculateSTOPBang(){
+      var boxes = document.querySelectorAll('#stopbangForm input[type="checkbox"]');
+      var score = 0;
+      boxes.forEach(cb => { if(cb.checked) score++; });
+
+      var recommendation = "";
+      var bgColor = "#f9f9f9";
+      var borderColor = "#ccc";
+
+      if (score <=2) {
+        recommendation = "Low OSA risk: No special perioperative precautions needed beyond standard monitoring.";
+        bgColor = "#e6f4ea";
+        borderColor = "#8bc34a";
+      } else if (score <=4) {
+        recommendation = "Intermediate OSA risk: Flag for careful sedation/analgesia, routine post-op monitoring.";
+        bgColor = "#fff7e0";
+        borderColor = "#ffb300";
+      } else {
+        recommendation = "High OSA risk: increased risk of postoperative respiratory complications; if feasible, consider pre-op sleep study for elective cases. Manage as probable OSA — minimize sedatives/opioids, ensure enhanced PACU monitoring.";
+        bgColor = "#fdecea";
+        borderColor = "#e53935";
+      }
+
+      var resultDiv = document.getElementById("stopbangResult");
+      resultDiv.innerHTML = "<strong>STOP-BANG Score: "+score+"/8</strong><br>"+recommendation;
+      resultDiv.style.background = bgColor;
+      resultDiv.style.borderColor = borderColor;
+      resultDiv.style.display = "block";
+    }
+  </script>
+</div>
+
+</body>
+</html>
